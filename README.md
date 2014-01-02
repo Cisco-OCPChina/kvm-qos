@@ -1,4 +1,4 @@
-kvm-qos
+KVM QoS
 =======
 
 KVM-QoS
