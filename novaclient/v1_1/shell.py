@@ -1,8 +1,8 @@
 
 @utils.arg('hypervisor', metavar='<hypervisor>', help='HyperVisor name or ID.')
-@utils.arg('component', metavar='<component>', help='cpu, memory, network')
-@utils.arg('vmlist', metavar='<vmlist>', help='vm1,vm2,vm3 or all')
-@utils.arg('percentage', metavar='<percentage>', help='20%,30%,50% or average')
+@utils.arg('component', metavar='<component>', help='cpu memory network')
+@utils.arg('vmlist', metavar='<vmlist>', help='vm1 vm2 vm3 or all')
+@utils.arg('percentage', metavar='<percentage>', help='20% 30% 50% or average')
 def do_partition(cs, args):
     """Partition the resource of one Hypervisor."""
 
@@ -38,8 +38,11 @@ def do_partition(cs, args):
             errorstr = "domain:"+vm + " does not exists or ACTIVE!"
             print errorstr
             return
+    else:
+        print "The hypervisor %s does not exists!" % hypervisor
+        return 
 
-    cs.tunning.partition(hypervisor, args.component, instance_list, args.percentage)
+    cs.hypervisors.partition(args.hypervisor, args.component, instance_list, args.percentage)
 
 
 
