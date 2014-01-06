@@ -1,4 +1,4 @@
-# Copyright 2012 OpenStack Foundation
+# Copyright 2012 OpenStack LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -17,8 +17,9 @@
 Hypervisors interface (1.1 extension).
 """
 
+import urllib
+
 from novaclient import base
-from novaclient.openstack.common.py3kcompat import urlutils
 
 
 class Hypervisor(base.Resource):
@@ -61,7 +62,7 @@ class HypervisorManager(base.ManagerWithFind):
         """
         target = 'servers' if servers else 'search'
         url = ('/os-hypervisors/%s/%s' %
-               (urlutils.quote(hypervisor_match, safe=''), target))
+               (urllib.quote(hypervisor_match, safe=''), target))
         return self._list(url, 'hypervisors')
 
     def get(self, hypervisor):

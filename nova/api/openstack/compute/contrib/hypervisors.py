@@ -1,4 +1,4 @@
-# Copyright (c) 2012 OpenStack Foundation
+# Copyright (c) 2012 OpenStack, LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -20,11 +20,13 @@ import webob.exc
 from nova.api.openstack import extensions
 from nova.api.openstack import wsgi
 from nova.api.openstack import xmlutil
-from nova import compute
+from nova.compute import api as compute_api
+from nova import db
 from nova import exception
-from nova.openstack.common.gettextutils import _
+from nova.openstack.common import log as logging
 
 
+LOG = logging.getLogger(__name__)
 authorize = extensions.extension_authorizer('compute', 'hypervisors')
 
 
@@ -126,7 +128,7 @@ class HypervisorsController(object):
     """The Hypervisors API controller for the OpenStack API."""
 
     def __init__(self):
-        self.host_api = compute.HostAPI()
+        self.api = compute_api.HostAPI()
         super(HypervisorsController, self).__init__()
 
     def _view_hypervisor(self, hypervisor, detail, servers=None, **kwargs):
@@ -162,27 +164,22 @@ class HypervisorsController(object):
     def index(self, req):
         context = req.environ['nova.context']
         authorize(context)
-        compute_nodes = self.host_api.compute_node_get_all(context)
-        req.cache_db_compute_nodes(compute_nodes)
         return dict(hypervisors=[self._view_hypervisor(hyp, False)
-                                 for hyp in compute_nodes])
+                                 for hyp in db.compute_node_get_all(context)])
 
     @wsgi.serializers(xml=HypervisorDetailTemplate)
     def detail(self, req):
         context = req.environ['nova.context']
         authorize(context)
-        compute_nodes = self.host_api.compute_node_get_all(context)
-        req.cache_db_compute_nodes(compute_nodes)
         return dict(hypervisors=[self._view_hypervisor(hyp, True)
-                                 for hyp in compute_nodes])
+                                 for hyp in db.compute_node_get_all(context)])
 
     @wsgi.serializers(xml=HypervisorTemplate)
     def show(self, req, id):
         context = req.environ['nova.context']
         authorize(context)
         try:
-            hyp = self.host_api.compute_node_get(context, id)
-            req.cache_db_compute_node(hyp)
+            hyp = db.compute_node_get(context, int(id))
         except (ValueError, exception.ComputeHostNotFound):
             msg = _("Hypervisor with ID '%s' could not be found.") % id
             raise webob.exc.HTTPNotFound(explanation=msg)
@@ -193,8 +190,7 @@ class HypervisorsController(object):
         context = req.environ['nova.context']
         authorize(context)
         try:
-            hyp = self.host_api.compute_node_get(context, id)
-            req.cache_db_compute_node(hyp)
+            hyp = db.compute_node_get(context, int(id))
         except (ValueError, exception.ComputeHostNotFound):
             msg = _("Hypervisor with ID '%s' could not be found.") % id
             raise webob.exc.HTTPNotFound(explanation=msg)
@@ -202,7 +198,7 @@ class HypervisorsController(object):
         # Get the uptime
         try:
             host = hyp['service']['host']
-            uptime = self.host_api.get_host_uptime(context, host)
+            uptime = self.api.get_host_uptime(context, host)
         except NotImplementedError:
             msg = _("Virt driver does not implement uptime function.")
             raise webob.exc.HTTPNotImplemented(explanation=msg)
@@ -214,8 +210,7 @@ class HypervisorsController(object):
     def search(self, req, id):
         context = req.environ['nova.context']
         authorize(context)
-        hypervisors = self.host_api.compute_node_search_by_hypervisor(
-                context, id)
+        hypervisors = db.compute_node_search_by_hypervisor(context, id)
         if hypervisors:
             return dict(hypervisors=[self._view_hypervisor(hyp, False)
                                      for hyp in hypervisors])
@@ -227,24 +222,21 @@ class HypervisorsController(object):
     def servers(self, req, id):
         context = req.environ['nova.context']
         authorize(context)
-        compute_nodes = self.host_api.compute_node_search_by_hypervisor(
-                context, id)
-        if not compute_nodes:
+        hypervisors = db.compute_node_search_by_hypervisor(context, id)
+        if hypervisors:
+            return dict(hypervisors=[self._view_hypervisor(hyp, False,
+                                     db.instance_get_all_by_host(context,
+                                                       hyp['service']['host']))
+                                     for hyp in hypervisors])
+        else:
             msg = _("No hypervisor matching '%s' could be found.") % id
             raise webob.exc.HTTPNotFound(explanation=msg)
-        hypervisors = []
-        for compute_node in compute_nodes:
-            instances = self.host_api.instance_get_all_by_host(context,
-                    compute_node['service']['host'])
-            hyp = self._view_hypervisor(compute_node, False, instances)
-            hypervisors.append(hyp)
-        return dict(hypervisors=hypervisors)
 
     @wsgi.serializers(xml=HypervisorStatisticsTemplate)
     def statistics(self, req):
         context = req.environ['nova.context']
         authorize(context)
-        stats = self.host_api.compute_node_statistics(context)
+        stats = db.compute_node_statistics(context)
         return dict(hypervisor_statistics=stats)
 
     @wsgi.serializers(xml=HypervisorIndexTemplate)
@@ -258,9 +250,8 @@ class HypervisorsController(object):
                                  for hyp in db.compute_node_get_all(context)])
         return resp
 
-
 class Hypervisors(extensions.ExtensionDescriptor):
-    """Admin-only hypervisor administration."""
+    """Admin-only hypervisor administration"""
 
     name = "Hypervisors"
     alias = "os-hypervisors"
