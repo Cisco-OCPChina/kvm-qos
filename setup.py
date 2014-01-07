@@ -18,17 +18,14 @@ tmp = "/tmp/kvm-qos"
 needbackup = True
 
 def rmdirwithdeep(path):
-    print "path : %s " % path
     list = os.listdir(path)
     for name in list:
         print "%s in %s" % (name, path)
         if os.path.isdir(path + "/" +  name):
-            print "dir %s" % name
             rmdirwithdeep(path + "/" + name)
-            print "will delete %s/%s" % (path, name)
-            os.removedirs(path + "/" + name)
+            if os.path.exists(path + "/" + name):
+                os.removedirs(path + "/" + name)
         else:
-            print "file %s" % name
             os.remove(path + "/" +name)
 
 def mkdirPathDir(parent, path):
@@ -40,7 +37,6 @@ def mkdirPathDir(parent, path):
             os.mkdir(path)
 
 def insertText2File(target, onwhat, insertfile):
-    print "tmp file %s" % (target+"_tmp")
     with open(target+"_tmp",'w') as outfile:
         with open(target, 'r') as infile:
             for line in infile:
