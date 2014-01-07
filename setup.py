@@ -25,6 +25,7 @@ def rmdirwithdeep(path):
         if os.path.isdir(path + "/" +  name):
             print "dir %s" % name
             rmdirwithdeep(path + "/" + name)
+            print "will delete %s/%s" % (path, name)
             os.removedirs(path + "/" + name)
         else:
             print "file %s" % name
@@ -39,6 +40,7 @@ def mkdirPathDir(parent, path):
             os.mkdir(path)
 
 def insertText2File(target, onwhat, insertfile):
+    print "tmp file %s" % (target+"_tmp")
     with open(target+"_tmp",'w') as outfile:
         with open(target, 'r') as infile:
             for line in infile:
