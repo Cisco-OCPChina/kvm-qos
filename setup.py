@@ -3,15 +3,7 @@ import os
 import shutil
 from distutils.sysconfig import get_python_lib
 
-replacefile = { "novaclient/v1_1/shell.py":"_quota_update(cs.quota_classes, args.class_name, args)", 
-    "novaclient/v1_1/hypervisors.py":"resource_class = Hypervisor",
-    "nova/api/openstack/compute/contrib/hypervisors.py":"return dict(hypervisor_statistics=stats)",
-    "nova/compute/api.py":"super(HostAPI, self).__init__()",
-    "nova/compute/manager.py":"self.driver.change_instance_metadata(context, instance, diff)",
-    "nova/compute/rpcapi.py":"class ComputeAPI(nova.openstack.common.rpc.proxy.RpcProxy):",
-    "nova/virt/libvirt/driver.py":"_conn = property(_get_connection)"
-              }
-
+replacefile = json.loads(open("replace.info").read())
 
 target = get_python_lib()
 tmp = "/tmp/kvm-qos"
