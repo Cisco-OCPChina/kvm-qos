@@ -45,10 +45,10 @@ def insertText2File(target, onwhat, insertfile):
         with open(target, 'r') as infile:
             for line in infile:
                outfile.write(line)
-               if line.endswith(onwhat):
+               if line.find(onwhat):
                    with open(insertfile, 'r') as insertf:
                        for l in inserf:
-                           outfile.wirte(l)
+                           outfile.write(l)
     shutil.move(target+"_tmp", target)
 
 action = "install"
