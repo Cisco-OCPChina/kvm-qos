@@ -23,7 +23,7 @@ def rmdirwithdeep(path):
     for name in list:
         print "%s in %s" % (name, path)
         if os.path.isdir(path + "/" +  name):
-        print "dir %s" % name
+            print "dir %s" % name
             rmdirwithdeep(path + "/" + name)
             os.removedirs(path + "/" + name)
         else:
