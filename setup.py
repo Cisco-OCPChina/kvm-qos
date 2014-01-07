@@ -1,6 +1,7 @@
 import sys
 import os
 import shutil
+import json
 from distutils.sysconfig import get_python_lib
 
 replacefile = json.loads(open("replace.info").read())
@@ -12,7 +13,6 @@ needbackup = True
 def rmdirwithdeep(path):
     list = os.listdir(path)
     for name in list:
-        print "%s in %s" % (name, path)
         if os.path.isdir(path + "/" +  name):
             rmdirwithdeep(path + "/" + name)
             if os.path.exists(path + "/" + name):
