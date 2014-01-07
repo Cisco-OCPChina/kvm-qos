@@ -45,9 +45,9 @@ def insertText2File(target, onwhat, insertfile):
         with open(target, 'r') as infile:
             for line in infile:
                outfile.write(line)
-               if line.find(onwhat):
+               if line.find(onwhat) > -1:
                    with open(insertfile, 'r') as insertf:
-                       for l in inserf:
+                       for l in insertf:
                            outfile.write(l)
     shutil.move(target+"_tmp", target)
 
