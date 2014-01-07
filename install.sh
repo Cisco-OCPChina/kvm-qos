@@ -9,20 +9,26 @@ files=( "novaclient/v1_1/shell.py"
 TARGET=/usr/lib/python2.6/site-packages
 TMP=/tmp/kvm-qos
 
+needback = true
 if [ -d $TMP ];
 then
-	rm -rf $TMP
+    needback = false
+else:
+    mkdir $TMP
 fi
-
-mkdir $TMP
 
 echo "Backup to $TMP, and replacing..."
 for name in ${files[@]}
 do
     if [ ! -d $TMP/"${name%/*}" ];
-	then
+    then
 	mkdir -p $TMP/"${name%/*}"
     fi
-    cp $TARGET/$name $TMP/$name
+
+    if [ needback ];
+    then
+        cp $TARGET/$name $TMP/$name
+    fi
+
     cp $name $TARGET/$name
 done
