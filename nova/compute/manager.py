@@ -3,6 +3,5 @@
     @reverts_task_state
     @wrap_instance_fault
     def partition(self, context, hypervisor, component, instance_list, percentage):
-        LOG.info("jack partition at compute manager %s", context.__dict__)
         self.driver.partition(hypervisor, component, instance_list, percentage)
 
