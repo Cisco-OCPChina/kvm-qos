@@ -13,4 +13,7 @@ After you reboot, it can work.
 
 If you want to restoring back, please run "python setup.py uninstall", then the shell will restoring the related python code.  
 
-
+Help
+----
+Example:
+    nova partition hypervisor-hostname cpu vm1,vm2 0.2,0.8
