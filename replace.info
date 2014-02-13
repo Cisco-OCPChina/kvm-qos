@@ -6,3 +6,4 @@
     "nova/compute/rpcapi.py":"class ComputeAPI(nova.openstack.common.rpc.proxy.RpcProxy):",
     "nova/virt/libvirt/driver.py":"_conn = property(_get_connection)"
               }
+####
